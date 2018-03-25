@@ -1,0 +1,92 @@
+<html>
+    <head>
+        <title>voro</title>
+    </head>
+<body bgcolor="#24AF69">
+    <div id="canvasContainer"></div>
+    <script type="text/javascript">
+        'use strict';
+        var utility = {};
+        utility.canvasCreate = function(containerId, id, dimensions) {
+            let container = document.getElementById(containerId);
+            if (container) {
+                let canvas = document.createElement('CANVAS');
+                canvas.id = id;
+                canvas.setAttribute('width', dimensions.width);
+                canvas.setAttribute('height', dimensions.height);
+                canvas.oncontextmenu = 'return false;';
+                canvas.style.background = 'rgb(130, 187, 236)';
+                canvas.style.margin = '10px';
+                container.appendChild(canvas);
+                return canvas;
+            }
+        };
+
+        var canvas_width = 400,
+            canvas_height = 320;
+        var canvas3 = utility.canvasCreate("canvasContainer", "3", { width: canvas_width, height: canvas_height });
+        var canvas5 = utility.canvasCreate("canvasContainer", "5", { width: canvas_width, height: canvas_height });
+        var ctx3 = canvas3.getContext("2d"),
+            ctx5 = canvas5.getContext("2d");
+
+        let colors = ["#9467bd", "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"];
+        let points = [],
+            pointsCount = 8 + Math.random() * 22,
+            radius = 0.1,
+            radiusVelocity = 20;
+        function init() {
+            for (let i = 0; i < pointsCount; i++) {
+                points.push([Math.random() * canvas_width, Math.random() * canvas_height]);
+            }
+        }
+
+        function update(delta) {
+            if (delta > 0) {
+                radius += radiusVelocity/1000 * delta;
+            }
+        }
+
+        function display() {
+            ctx3.clearRect(0, 0, canvas_width, canvas_height);
+            ctx3.globalCompositeOperation = 'source-over';
+            for (let i = 0; i < pointsCount; i++) {
+                let p = points[i];
+                ctx3.beginPath();
+                ctx3.fillStyle = colors[i%colors.length];
+                ctx3.arc(p[0], p[1], radius, 0, Math.PI*2);
+                ctx3.fill();
+            }
+
+            ctx3.globalCompositeOperation = 'xor';
+            for (let i = 0; i < pointsCount; i++) {
+                let p = points[i];
+                ctx3.beginPath();
+                ctx3.fillStyle = colors[i%colors.length];
+                ctx3.arc(p[0], p[1], radius/1.1, 0, Math.PI*2);
+                ctx3.fill();
+            }
+            
+            ctx5.globalCompositeOperation = 'destination-over';
+            ctx5.drawImage(canvas3, 0, 0)
+            ctx5.fillStyle = 'black';
+            for (let i = 0; i < pointsCount; i++) {
+                let p = points[i];
+                ctx5.beginPath();
+                ctx5.arc(p[0], p[1], 2, 0, Math.PI*2);
+                ctx5.fill();
+            }
+        }
+
+		window.onload = function() {
+			var mainloop_updateLast = performance.now();
+			init();
+			(function mainLoop(nowTime) {
+                update(nowTime - mainloop_updateLast);
+				display();
+                mainloop_updateLast = nowTime;
+                if (radius < canvas_width) requestAnimationFrame(mainLoop);
+			})(performance.now());
+		}
+    </script>
+</body>
+</html>
